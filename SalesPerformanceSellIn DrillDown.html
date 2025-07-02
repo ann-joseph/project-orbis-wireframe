@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<!-- saved from url=(0086)file:///Users/Sona.Joseph/Library/CloudStorage/OneDrive-Shell/Documents/VSCODE/SI.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Sales Performance</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        .table-top-bar {
+            background-color: hwb(240 24% 71%);
+            color: #000;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            position: relative;
+        }
+
+        .table-top-bar h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .table-top-bar .buttons {
+            position: absolute;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .table-top-bar .buttons button {
+            background-color: #fff;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: #000000;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-top-bar .buttons button.active {
+            background-color: #2f99ce;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .top-bar {
+            background-color: #fdd835;
+            color: #000;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-bar img {
+            height: 40px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .top-bar h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: crimson;
+            margin-right: 40px;
+        }
+
+        .top-bar .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .top-bar .tabs button {
+            background-color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .top-bar .tabs button.active {
+            background-color: #fdd835;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: hsl(43, 82%, 87%);
+            padding: 20px 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            height: calc(100vh - 70px);
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            margin-top: 70px;
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+
+        .table-header {
+            background-color: #fdd835;
+            color: #000;
+            font-weight: bold;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .table-header div {
+            flex: 1;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th{
+            background-color: #fdd835;
+        }
+
+        .expand-btn {
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .hidden-row {
+            display: none;
+        }
+
+        .region-row {
+            background-color: #f7f7f7;
+            font-weight: bold;
+        }
+
+        .md-row td:first-child {
+            padding-left: 20px;
+        }
+
+        .soldto-row td:first-child {
+            padding-left: 40px;
+        }
+
+        .shipto-row td:first-child {
+            padding-left: 60px;
+        }
+    </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.expand-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const target = btn.getAttribute('data-target');
+                const rows = document.querySelectorAll('.parent-' + target);
+                const expanded = btn.textContent === '−';
+                btn.textContent = expanded ? '+' : '−';
+                rows.forEach(function (row) {
+                    if (expanded) {
+                        row.classList.add('hidden-row');
+                        // Collapse all nested children as well
+                        row.querySelectorAll('.expand-btn').forEach(function (childBtn) {
+                            childBtn.textContent = '+';
+                        });
+                        const nestedRows = document.querySelectorAll('.parent-' + row.id);
+                        nestedRows.forEach(function (nestedRow) {
+                            nestedRow.classList.add('hidden-row');
+                        });
+                    } else {
+                        row.classList.remove('hidden-row');
+                    }
+                });
+            });
+        });
+    });
+</script></head>
+
+
+
+
+<body>
+    <!-- Top bar -->
+    <div class="top-bar">
+        <img src="file:///Users/Sona.Joseph/Library/CloudStorage/OneDrive-Shell/Documents/VSCODE/shell-logo.png" alt="Shell Logo">
+        <h1>Sales Performance</h1>
+        <h2>Orbis</h2>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="filter-group">
+            <label class="filter-label" for="year">Year</label>
+            <select id="year">
+                <option value="">All</option>
+                <option value="active">2025</option>
+                <option value="archived">2024</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label" for="month">Month</label>
+            <select id="month">
+                <option value="">All</option>
+                <option value="active">January</option>
+                <option value="archived">February</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label" for="md">MD</label>
+            <select id="md">
+                <option value="">All</option>
+                <option value="sales">MD1</option>
+                <option value="marketing">MD2</option>
+                <option value="finance">MD3</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div class="table-top-bar">
+            <h2>Sales Performance</h2>
+            <div class="buttons">
+                <button class="active">NEW! Sell In Drill-Down</button>
+                <button>Sales Performance Table</button>
+                <button>YA Performance</button>
+                
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Region/MD</th>
+                    <th>Sell In Actual</th>
+                    <th>Sell In Target</th>
+                    <th>Sell In Δ</th>
+                    <th>Sell In Δ%</th>
+                    <th>Sell In YoY Δ</th>
+                    <th>Sell In YoY Δ%</th>
+                    <th>C3 Target</th>
+                    <th>C3 Actual</th>
+                    <th>C3 Δ</th>
+                    <th>C3 Δ%</th>
+                    <th>C3 YoY Δ</th>
+                    <th>C3 YoY Δ%</th>
+                    <th>UC3 Target</th>
+                    <th>UC3 Actual</th>
+                    <th>UC3 Δ</th>
+                    <th>UC3 Δ%</th>
+                    <th>UC3 YoY Δ</th>
+                    <th>UC3 YoY Δ%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Region: North -->
+                <tr id="north" class="region-row">
+                    <td>
+                        <span class="expand-btn" data-target="north">+</span> North
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under North -->
+                <tr id="md1" class="md-row parent-north hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md1">+</span> MD1
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD1 -->
+                <tr id="soldto1001" class="soldto-row parent-md1 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1001">+</span> Sold-To 1001
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1001 hidden-row">
+                    <td>Ship-To 2001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To2 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1001 hidden-row">
+                    <td>Ship-To 2002</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To2 under MD1 -->
+                <tr id="soldto1002" class="soldto-row parent-md1 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1002">+</span> Sold-To 1002
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1002 -->
+                <tr class="shipto-row parent-soldto1002 hidden-row">
+                    <td>Ship-To 3001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under North -->
+                <tr id="md2" class="md-row parent-north hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md2">+</span> MD2
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD1 -->
+                <tr id="soldto1003" class="soldto-row parent-md2 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1003">+</span> Sold-To 1003
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1003 hidden-row">
+                    <td>Ship-To 4001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Region: South -->
+                <tr id="south" class="region-row">
+                    <td>
+                        <span class="expand-btn" data-target="south">+</span> South
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under South -->
+                <tr id="md3" class="md-row parent-south hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md3">+</span> MD3
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD1 -->
+                <tr id="soldto1004" class="soldto-row parent-md3 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1004">+</span> Sold-To 1004
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1004 hidden-row">
+                    <td>Ship-To 5001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To2 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1004 hidden-row">
+                    <td>Ship-To 5002</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To2 under MD1 -->
+                <tr id="soldto1005" class="soldto-row parent-md3 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1005">+</span> Sold-To 1005
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1002 -->
+                <tr class="shipto-row parent-soldto1005 hidden-row">
+                    <td>Ship-To 6001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under South -->
+                <tr id="md4" class="md-row parent-south hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md4">+</span> MD4
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD4 -->
+                <tr id="soldto1006" class="soldto-row parent-md4 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1006">+</span> Sold-To 1006
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1006 -->
+                <tr class="shipto-row parent-soldto1006 hidden-row">
+                    <td>Ship-To 7001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+
+                <!-- Region: Other -->
+                <tr id="other" class="region-row">
+                    <td>
+                        <span class="expand-btn" data-target="other">+</span> Other
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under Other -->
+                <tr id="md5" class="md-row parent-other hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md5">+</span> MD5
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD5 -->
+                <tr id="soldto1007" class="soldto-row parent-md5 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1007">+</span> Sold-To 1007
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1007 -->
+                <tr class="shipto-row parent-soldto1007 hidden-row">
+                    <td>Ship-To 8001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To2 under Sold-To 1001 -->
+                <tr class="shipto-row parent-soldto1007 hidden-row">
+                    <td>Ship-To 8002</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To2 under MD1 -->
+                <tr id="soldto1008" class="soldto-row parent-md5 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1008">+</span> Sold-To 1008
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1008 -->
+                <tr class="shipto-row parent-soldto1008 hidden-row">
+                    <td>Ship-To 9001</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- MD under Other -->
+                <tr id="md6" class="md-row parent-other hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="md6">+</span> MD6
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Sold-To1 under MD6 -->
+                <tr id="soldto1009" class="soldto-row parent-md6 hidden-row">
+                    <td>
+                        <span class="expand-btn" data-target="soldto1009">+</span> Sold-To 1009
+                    </td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+                <!-- Ship-To1 under Sold-To 1009 -->
+                <tr class="shipto-row parent-soldto1009 hidden-row">
+                    <td>Ship-To 9002</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                    <td>123455</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</body></html>
